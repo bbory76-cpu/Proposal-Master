@@ -39,3 +39,204 @@ body {
 .lenis.lenis-scrolling iframe {
   pointer-events: none;
 }
+
+/* Proposal Master design overrides - appended per project rule */
+@font-face {
+  font-family: "Pretendard";
+  font-weight: 45 920;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/woff2/PretendardVariable.woff2") format("woff2-variations");
+}
+
+:root {
+  --pm-primary: #533afd;
+  --pm-primary-deep: #4434d4;
+  --pm-primary-press: #2e2b8c;
+  --pm-brand-dark: #1c1e54;
+  --pm-ink: #0d253d;
+  --pm-ink-muted: #64748d;
+  --pm-hairline: rgba(227, 232, 238, 0.22);
+  --pm-font-sans: "Pretendard", "Inter", "SF Pro Display", system-ui, -apple-system, sans-serif;
+}
+
+html,
+body,
+#root,
+#root *:not(svg):not(path) {
+  font-family: var(--pm-font-sans) !important;
+  font-feature-settings: "ss01";
+  letter-spacing: 0;
+  word-break: keep-all;
+}
+
+#root h1,
+#root h2,
+#root h3,
+#root [class*="text-[42px]"],
+#root [style*="clamp"] {
+  font-weight: 300 !important;
+  letter-spacing: -0.025em !important;
+}
+
+#root p,
+#root li,
+#root label,
+#root input,
+#root button,
+#root a,
+#root span {
+  line-height: 1.45;
+}
+
+#root button,
+#root a[href^="mailto:"] {
+  min-height: 40px;
+  border-radius: 9999px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+#root button:active,
+#root a[href^="mailto:"]:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+#root button[class*="bg-white"][class*="text-black"],
+#root button[class*="bg-white"][class*="rounded-full"] {
+  background: var(--pm-primary) !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 28px rgba(83, 58, 253, 0.26);
+}
+
+#root button[class*="bg-white"][class*="text-black"]:hover,
+#root button[class*="bg-white"][class*="rounded-full"]:hover {
+  background: var(--pm-primary-deep) !important;
+}
+
+#root button[class*="bg-white/10"],
+#root button[class*="bg-white/15"] {
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+}
+
+#root input {
+  min-height: 44px;
+  border-radius: 8px !important;
+  border-color: rgba(168, 195, 222, 0.28) !important;
+  font-weight: 400 !important;
+}
+
+#root input:focus {
+  border-color: var(--pm-primary) !important;
+  box-shadow: 0 0 0 3px rgba(83, 58, 253, 0.18);
+}
+
+#root [class*="text-[42px]"],
+#root [class*="tracking-tight"] {
+  font-feature-settings: "tnum", "ss01";
+}
+
+/* Proposal Master responsive hero refinements - appended per project rule */
+#root section:first-of-type h1 {
+  max-width: min(46vw, 520px);
+  overflow-wrap: keep-all;
+  word-break: keep-all;
+  font-size: clamp(44px, 7.4vw, 96px) !important;
+}
+
+#root section:first-of-type p {
+  max-width: min(92vw, 460px);
+  text-wrap: pretty;
+}
+
+@media (max-width: 767px) {
+  #root section:first-of-type {
+    min-height: 100svh;
+  }
+
+  #root section:first-of-type h1 {
+    max-width: 100%;
+    font-size: clamp(42px, 14vw, 68px) !important;
+    line-height: 1.04 !important;
+  }
+
+  #root section:first-of-type > div:last-child > div:last-child {
+    gap: 20px;
+  }
+
+  #root section:first-of-type p {
+    max-width: 92vw;
+    font-size: 14px !important;
+  }
+}
+
+/* Proposal Master mobile pricing layout - appended per project rule */
+@media (max-width: 767px) {
+  #root section:nth-of-type(6) {
+    padding: 72px 10px !important;
+  }
+
+  #root section:nth-of-type(6) > div {
+    max-width: 100%;
+  }
+
+  #root section:nth-of-type(6) > div > div:first-child {
+    margin-bottom: 32px !important;
+  }
+
+  #root section:nth-of-type(6) > div > div:last-child {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    gap: 12px !important;
+    align-items: stretch;
+  }
+
+  #root section:nth-of-type(6) > div > div:last-child > div {
+    min-width: 0;
+    padding: 18px 12px !important;
+    border-radius: 14px !important;
+  }
+
+  #root section:nth-of-type(6) > div > div:last-child > div:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  #root section:nth-of-type(6) [class*="text-[42px]"] {
+    font-size: clamp(30px, 9vw, 38px) !important;
+    line-height: 1.05 !important;
+  }
+
+  #root section:nth-of-type(6) [class*="text-[14px]"] {
+    font-size: 11px !important;
+  }
+
+  #root section:nth-of-type(6) p[class*="leading-relaxed"] {
+    margin-bottom: 16px !important;
+    font-size: 12px !important;
+    line-height: 1.45 !important;
+  }
+
+  #root section:nth-of-type(6) ul {
+    gap: 6px !important;
+    margin-bottom: 16px !important;
+  }
+
+  #root section:nth-of-type(6) li {
+    gap: 6px !important;
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+  }
+
+  #root section:nth-of-type(6) li:nth-child(n + 3) {
+    display: none !important;
+  }
+
+  #root section:nth-of-type(6) iframe[title="PayPal"] {
+    max-width: 100% !important;
+  }
+
+  #root section:nth-of-type(6) a[href^="mailto:"] {
+    height: 44px !important;
+    font-size: 13px !important;
+  }
+}

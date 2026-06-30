@@ -1,28 +1,49 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { useState, type KeyboardEvent } from 'react';
+import { motion } from 'framer-motion';
+import { ArrowRight, Globe2 } from 'lucide-react';
 import { ProposalMasterLogo } from './ProposalMasterLogo';
-import { SquashHamburger } from './SquashHamburger';
 import { ScrambleText } from './ScrambleText';
 import { AuthModal } from './AuthModal';
 import { useAuth } from '../contexts/AuthContext';
-import { SITE_CONFIG } from '../config/content';
+import { SITE_CONTENT, type Language } from '../config/content';
 
 interface NavbarProps {
   entranceComplete: boolean;
+  language: Language;
+  onLanguageChange: (language: Language) => void;
+  siteConfig: (typeof SITE_CONTENT)[Language];
 }
 
-export function Navbar({ entranceComplete }: NavbarProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
+export function Navbar({
+  entranceComplete,
+  language,
+  onLanguageChange,
+  siteConfig,
+}: NavbarProps) {
   const [downloadHovered, setDownloadHovered] = useState(false);
-  const [aboutHovered, setAboutHovered] = useState(false);
-  const [metricsHovered, setMetricsHovered] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const nav = siteConfig.nav;
+  const nextLanguage = language === 'ko' ? 'en' : 'ko';
+  const languageLabel = language === 'ko' ? 'KO' : 'EN';
 
   const scrollTo = (y: number) => {
     window.scrollTo({ top: y, behavior: 'smooth' });
-    setMenuOpen(false);
+  };
+
+  const scrollToTop = () => {
+    scrollTo(0);
+  };
+
+  const handleBrandKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      scrollToTop();
+    }
+  };
+
+  const toggleLanguage = () => {
+    onLanguageChange(nextLanguage);
   };
 
   return (
@@ -39,70 +60,36 @@ export function Navbar({ entranceComplete }: NavbarProps) {
           <div className="flex items-center gap-2">
             {/* Logo pill */}
             <motion.div
-              className={`h-12 px-5 bg-white/15 backdrop-blur-md rounded-[14px] flex items-center gap-2.5 cursor-pointer ${
-                menuOpen ? 'hidden md:flex' : 'flex'
-              }`}
+              className="h-12 px-5 bg-white/15 backdrop-blur-md rounded-[14px] flex items-center gap-2.5 cursor-pointer"
+              role="button"
+              tabIndex={0}
+              aria-label={nav.topLabel}
+              onClick={scrollToTop}
+              onKeyDown={handleBrandKeyDown}
               whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.22)' }}
               whileTap={{ scale: 0.98 }}
             >
               <ProposalMasterLogo size={18} className="text-white" />
               <span className="text-[16px] font-medium tracking-tight text-white">
-                {SITE_CONFIG.brandName}
+                {siteConfig.brandName}
               </span>
             </motion.div>
 
-            {/* Expanding menu pill */}
-            <motion.div
-              className="h-12 rounded-[14px] bg-white/15 backdrop-blur-md flex items-center overflow-hidden"
-              animate={{ width: menuOpen ? 290 : 48 }}
-              transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+            {/* Inline menu buttons */}
+            <motion.button
+              className="h-12 px-5 rounded-[14px] bg-white/15 backdrop-blur-md text-[16px] font-normal text-white/85 hover:text-white hover:bg-white/20 transition-colors cursor-pointer border-none whitespace-nowrap"
+              whileTap={{ scale: 0.97 }}
+              onClick={() => scrollTo(window.innerHeight)}
             >
-              {/* Hamburger button */}
-              <motion.button
-                className="flex items-center justify-center shrink-0 cursor-pointer"
-                style={{
-                  width: menuOpen ? 36 : 48,
-                  height: menuOpen ? 36 : 48,
-                  borderRadius: menuOpen ? 11 : 14,
-                  backgroundColor: menuOpen ? 'rgba(255,255,255,0.1)' : 'transparent',
-                  marginLeft: menuOpen ? 6 : 0,
-                }}
-                onClick={() => setMenuOpen(!menuOpen)}
-                whileHover={{ backgroundColor: menuOpen ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)' }}
-              >
-                <SquashHamburger isOpen={menuOpen} />
-              </motion.button>
-
-              {/* Nav links */}
-              <AnimatePresence>
-                {menuOpen && (
-                  <motion.div
-                    className="flex items-center gap-6 ml-4 whitespace-nowrap"
-                    initial={{ opacity: 0, x: 15 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 15 }}
-                    transition={{ duration: 0.25 }}
-                  >
-                    <button
-                      className="text-[16px] font-normal text-white/85 hover:text-white transition-colors cursor-pointer bg-transparent border-none"
-                      onMouseEnter={() => setAboutHovered(true)}
-                      onMouseLeave={() => setAboutHovered(false)}
-                      onClick={() => scrollTo(window.innerHeight)}
-                    >
-                      <ScrambleText text="Service" isHovered={aboutHovered} />
-                    </button>
-                    <button
-                      className="text-[16px] font-normal text-white/85 hover:text-white transition-colors cursor-pointer bg-transparent border-none"
-                      onMouseEnter={() => setMetricsHovered(true)}
-                      onMouseLeave={() => setMetricsHovered(false)}
-                      onClick={() => scrollTo(window.innerHeight * 2)}
-                    >
-                      <ScrambleText text="Results" isHovered={metricsHovered} />
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
+              {nav.service}
+            </motion.button>
+            <motion.button
+              className="h-12 px-5 rounded-[14px] bg-white/15 backdrop-blur-md text-[16px] font-normal text-white/85 hover:text-white hover:bg-white/20 transition-colors cursor-pointer border-none whitespace-nowrap"
+              whileTap={{ scale: 0.97 }}
+              onClick={() => scrollTo(window.innerHeight * 2)}
+            >
+              {nav.results}
+            </motion.button>
           </div>
 
           {/* Right buttons */}
@@ -129,7 +116,7 @@ export function Navbar({ entranceComplete }: NavbarProps) {
                     onClick={signOut}
                     className="text-[12px] text-white/40 hover:text-white/80 transition-colors cursor-pointer bg-transparent border-none ml-1"
                   >
-                    Sign Out
+                    {nav.signOut}
                   </button>
                 </div>
               </div>
@@ -139,9 +126,20 @@ export function Navbar({ entranceComplete }: NavbarProps) {
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setAuthOpen(true)}
               >
-                Sign In
+                {nav.signIn}
               </motion.button>
             )}
+
+            {/* Language button */}
+            <motion.button
+              className="h-12 px-4 bg-white/10 backdrop-blur-md rounded-[14px] flex items-center gap-2 cursor-pointer border-none text-white/85 text-[14px] font-medium hover:bg-white/20 transition-colors"
+              aria-label={`${nav.languageLabel}: ${nextLanguage.toUpperCase()}`}
+              whileTap={{ scale: 0.97 }}
+              onClick={toggleLanguage}
+            >
+              <Globe2 size={16} className="text-white/80" />
+              <span>{languageLabel}</span>
+            </motion.button>
 
             {/* CTA button */}
             <motion.button
@@ -153,7 +151,7 @@ export function Navbar({ entranceComplete }: NavbarProps) {
               onClick={() => scrollTo(window.innerHeight * 5)}
             >
               <span className="text-black text-[16px] font-medium">
-                <ScrambleText text="Start" isHovered={downloadHovered} />
+                <ScrambleText text={nav.start} isHovered={downloadHovered} />
               </span>
               <ArrowRight size={16} className="text-black" />
             </motion.button>
@@ -164,63 +162,37 @@ export function Navbar({ entranceComplete }: NavbarProps) {
         <div className="flex sm:hidden items-center justify-between w-full">
           {/* Left group */}
           <div className="flex items-center gap-1.5 flex-1 min-w-0">
-            {/* Logo pill (collapses when menu open) */}
+            {/* Logo pill */}
             <motion.div
-              className="h-9 px-3 bg-white/15 backdrop-blur-md rounded-[10px] flex items-center gap-2 overflow-hidden shrink-0"
-              animate={{ width: menuOpen ? 0 : 'auto', opacity: menuOpen ? 0 : 1, paddingLeft: menuOpen ? 0 : 12, paddingRight: menuOpen ? 0 : 12 }}
-              transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+              className="h-9 px-2 bg-white/15 backdrop-blur-md rounded-[10px] flex items-center gap-1.5 overflow-hidden shrink-0 cursor-pointer"
+              role="button"
+              tabIndex={0}
+              aria-label={nav.topLabel}
+              onClick={scrollToTop}
+              onKeyDown={handleBrandKeyDown}
+              whileTap={{ scale: 0.96 }}
             >
               <ProposalMasterLogo size={14} className="text-white shrink-0" />
-              <span className="text-[13px] font-medium tracking-tight text-white whitespace-nowrap">
-                {SITE_CONFIG.brandName}
+              <span className="text-[11px] font-medium tracking-tight text-white whitespace-nowrap">
+                PM
               </span>
             </motion.div>
 
-            {/* Expanding menu capsule */}
-            <motion.div
-              className="h-9 rounded-[10px] bg-white/15 backdrop-blur-md flex items-center overflow-hidden"
-              animate={{ width: menuOpen ? '100%' : 36 }}
-              transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+            {/* Inline menu buttons */}
+            <motion.button
+              className="h-9 px-2 rounded-[10px] bg-white/15 backdrop-blur-md text-[11px] font-normal text-white/85 cursor-pointer border-none whitespace-nowrap shrink-0"
+              whileTap={{ scale: 0.95 }}
+              onClick={() => scrollTo(window.innerHeight)}
             >
-              <motion.button
-                className="flex items-center justify-center shrink-0 cursor-pointer"
-                style={{
-                  width: menuOpen ? 30 : 36,
-                  height: menuOpen ? 30 : 36,
-                  borderRadius: menuOpen ? 8 : 10,
-                  backgroundColor: menuOpen ? 'rgba(255,255,255,0.1)' : 'transparent',
-                  marginLeft: menuOpen ? 4 : 0,
-                }}
-                onClick={() => setMenuOpen(!menuOpen)}
-              >
-                <SquashHamburger isOpen={menuOpen} isMobile />
-              </motion.button>
-
-              <AnimatePresence>
-                {menuOpen && (
-                  <motion.div
-                    className="flex items-center gap-4 ml-3 whitespace-nowrap"
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 10 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <button
-                      className="text-[13px] font-normal text-white/85 cursor-pointer bg-transparent border-none"
-                      onClick={() => scrollTo(window.innerHeight)}
-                    >
-                      Service
-                    </button>
-                    <button
-                      className="text-[13px] font-normal text-white/85 cursor-pointer bg-transparent border-none"
-                      onClick={() => scrollTo(window.innerHeight * 2)}
-                    >
-                      Results
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
+              {nav.service}
+            </motion.button>
+            <motion.button
+              className="h-9 px-2 rounded-[10px] bg-white/15 backdrop-blur-md text-[11px] font-normal text-white/85 cursor-pointer border-none whitespace-nowrap shrink-0"
+              whileTap={{ scale: 0.95 }}
+              onClick={() => scrollTo(window.innerHeight * 2)}
+            >
+              {nav.results}
+            </motion.button>
           </div>
 
           {/* Right buttons */}
@@ -242,21 +214,32 @@ export function Navbar({ entranceComplete }: NavbarProps) {
               </motion.button>
             ) : (
               <motion.button
-                className="h-9 px-3 bg-white/15 backdrop-blur-md rounded-[10px] flex items-center cursor-pointer border-none text-white/85 text-[12px] font-medium"
+                className="h-9 px-2.5 bg-white/15 backdrop-blur-md rounded-[10px] flex items-center cursor-pointer border-none text-white/85 text-[11px] font-medium"
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setAuthOpen(true)}
               >
-                Sign In
+                {nav.signIn}
               </motion.button>
             )}
 
+            {/* Language button */}
+            <motion.button
+              className="h-9 px-2 bg-white/15 backdrop-blur-md rounded-[10px] flex items-center gap-1 cursor-pointer border-none text-white/85 text-[11px] font-medium shrink-0"
+              aria-label={`${nav.languageLabel}: ${nextLanguage.toUpperCase()}`}
+              whileTap={{ scale: 0.95 }}
+              onClick={toggleLanguage}
+            >
+              <Globe2 size={12} className="text-white/80" />
+              <span>{languageLabel}</span>
+            </motion.button>
+
             {/* CTA button */}
             <motion.button
-              className="h-9 px-3.5 bg-white rounded-full flex items-center gap-1.5 cursor-pointer border-none shrink-0"
+              className="h-9 px-2.5 bg-white rounded-full flex items-center gap-1 cursor-pointer border-none shrink-0"
               whileTap={{ scale: 0.95 }}
               onClick={() => scrollTo(window.innerHeight * 5)}
             >
-              <span className="text-black text-[13px] font-medium">Start</span>
+              <span className="text-black text-[12px] font-medium">{nav.start}</span>
               <ArrowRight size={13} className="text-black" />
             </motion.button>
           </div>

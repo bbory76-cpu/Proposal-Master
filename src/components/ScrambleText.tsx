@@ -15,6 +15,7 @@ interface ScrambleInProps {
 export function ScrambleIn({ text, delay, triggered }: ScrambleInProps) {
   const [displayText, setDisplayText] = useState<string>('');
   const [hasStarted, setHasStarted] = useState(false);
+  const shouldScramble = /^[\x00-\x7F]*$/.test(text);
 
   useEffect(() => {
     if (!triggered) {
@@ -32,6 +33,11 @@ export function ScrambleIn({ text, delay, triggered }: ScrambleInProps) {
 
   useEffect(() => {
     if (!hasStarted) return;
+
+    if (!shouldScramble) {
+      setDisplayText(text);
+      return;
+    }
 
     let frame = 0;
     const interval = setInterval(() => {
@@ -60,7 +66,7 @@ export function ScrambleIn({ text, delay, triggered }: ScrambleInProps) {
     }, 25);
 
     return () => clearInterval(interval);
-  }, [hasStarted, text]);
+  }, [hasStarted, shouldScramble, text]);
 
   if (!triggered) {
     return <span>{'\u00A0'}</span>;

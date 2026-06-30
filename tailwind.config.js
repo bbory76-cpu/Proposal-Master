@@ -4,9 +4,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Space Mono"', 'monospace'],
-        serif: ['"Space Mono"', 'monospace'],
-        mono: ['"Space Mono"', 'monospace'],
+        sans: ['"Pretendard"', '"Inter"', 'system-ui', '-apple-system', 'sans-serif'],
+        serif: ['"Pretendard"', '"Inter"', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['"SFMono-Regular"', '"Roboto Mono"', 'monospace'],
       },
     },
   },

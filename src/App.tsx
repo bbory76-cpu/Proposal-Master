@@ -7,18 +7,26 @@ import {
   useMotionTemplate,
 } from 'framer-motion';
 import { Navbar } from './components/Navbar';
-import { ScrambleIn } from './components/ScrambleText';
 import { ProposalMasterLogo } from './components/ProposalMasterLogo';
 import PayPalCheckoutButton from './components/payment/PayPalCheckoutButton';
 import { useAuth } from './contexts/AuthContext';
 import { createOrder } from './lib/firestore';
 import { PRODUCTS } from './lib/paypal';
 import { VIDEO_URLS } from './config/videos';
-import { SITE_CONFIG } from './config/content';
+import { SITE_CONTENT, type Language } from './config/content';
 
 export default function App() {
   const [entranceComplete, setEntranceComplete] = useState(false);
+  const [language, setLanguage] = useState<Language>(() => {
+    const saved = window.localStorage.getItem('proposal-master-language');
+    return saved === 'en' ? 'en' : 'ko';
+  });
   const { user } = useAuth();
+
+  useEffect(() => {
+    window.localStorage.setItem('proposal-master-language', language);
+    document.documentElement.lang = language;
+  }, [language]);
 
   /* ── PayPal 결제 완료 → Firestore 저장 ── */
   const handlePayPalSuccess = useCallback(
@@ -104,11 +112,17 @@ export default function App() {
   const transform3D = useMotionTemplate`rotateX(24deg) translateY(${yScaleValue}px) translateZ(15px)`;
 
   /* ── Destructure config for readability ── */
-  const { hero, cinematic, metrics, technology, architecture, footer } = SITE_CONFIG;
+  const siteConfig = SITE_CONTENT[language];
+  const { hero, cinematic, metrics, technology, architecture, pricing, footer } = siteConfig;
 
   return (
     <div style={{ fontFamily: '"Space Mono", monospace' }}>
-      <Navbar entranceComplete={entranceComplete} />
+      <Navbar
+        entranceComplete={entranceComplete}
+        language={language}
+        onLanguageChange={setLanguage}
+        siteConfig={siteConfig}
+      />
 
       {/* ════════════════ SECTION 1: HERO ════════════════ */}
       <section className="relative h-screen h-[100dvh] flex flex-col overflow-hidden">
@@ -169,42 +183,18 @@ export default function App() {
         >
           <div className="flex-1" />
 
-          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-            {/* Left column */}
-            <div className="flex flex-col gap-4">
-              <h1
-                className="text-white font-light leading-[0.95] tracking-[-0.03em]"
-                style={{ fontSize: 'clamp(40px, 10vw, 100px)' }}
-              >
-                <ScrambleIn text={hero.titleLeft[0]} delay={200} triggered={entranceComplete} />
-                <br />
-                <ScrambleIn text={hero.titleLeft[1]} delay={500} triggered={entranceComplete} />
-              </h1>
-
-              <motion.p
-                className="max-w-sm text-[13px] sm:text-[15px] text-white/60 leading-relaxed"
-                initial={{ opacity: 0, y: 25 }}
-                animate={entranceComplete ? { opacity: 1, y: 0 } : {}}
-                transition={{
-                  duration: 0.9,
-                  ease: [0.215, 0.61, 0.355, 1.0],
-                  delay: 0.2,
-                }}
-              >
-                {hero.description}
-              </motion.p>
-            </div>
-
-            {/* Right heading */}
-            <h1
-              className="text-white font-light leading-[0.95] tracking-[-0.03em] text-left md:text-right"
-              style={{ fontSize: 'clamp(40px, 10vw, 100px)' }}
-            >
-              <ScrambleIn text={hero.titleRight[0]} delay={700} triggered={entranceComplete} />
-              <br />
-              <ScrambleIn text={hero.titleRight[1]} delay={1000} triggered={entranceComplete} />
-            </h1>
-          </div>
+          <motion.p
+            className="max-w-sm text-[13px] sm:text-[15px] text-white/60 leading-relaxed"
+            initial={{ opacity: 0, y: 25 }}
+            animate={entranceComplete ? { opacity: 1, y: 0 } : {}}
+            transition={{
+              duration: 0.9,
+              ease: [0.215, 0.61, 0.355, 1.0],
+              delay: 0.2,
+            }}
+          >
+            {hero.description}
+          </motion.p>
         </motion.div>
       </section>
 
@@ -233,6 +223,30 @@ export default function App() {
             background: 'linear-gradient(to bottom, #010103, transparent)',
           }}
         />
+
+        {/* Service section heading */}
+        <motion.div
+          className="absolute top-24 sm:top-28 left-0 right-0 z-20 px-6 sm:px-10"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9 }}
+          viewport={{ once: true, amount: 0.3 }}
+        >
+          <div className="mx-auto max-w-6xl flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-8">
+            <h2
+              className="text-white font-light leading-[1.02] tracking-[-0.025em]"
+              style={{ fontSize: 'clamp(26px, 4.2vw, 54px)' }}
+            >
+              {hero.titleLeft.join(' ')}
+            </h2>
+            <h2
+              className="text-white font-light leading-[1.02] tracking-[-0.025em] sm:text-right"
+              style={{ fontSize: 'clamp(26px, 4.2vw, 54px)' }}
+            >
+              {hero.titleRight.join(' ')}
+            </h2>
+          </div>
+        </motion.div>
 
         {/* 3D text content */}
         <div className="relative z-20 max-w-5xl mx-auto" style={{ perspective: 400 }}>
@@ -424,16 +438,16 @@ export default function App() {
             viewport={{ once: true, amount: 0.3 }}
           >
             <p className="text-white/40 text-[13px] sm:text-[14px] tracking-[0.2em] uppercase mb-8">
-              Pricing
+              {pricing.subtitle}
             </p>
             <h2
               className="text-white font-light leading-[1.15] tracking-[-0.02em] mb-6"
               style={{ fontSize: 'clamp(28px, 6vw, 56px)' }}
             >
-              문서 작성 속도를 선택하세요
+              {pricing.heading}
             </h2>
             <p className="text-white/45 text-[15px] sm:text-[17px] leading-relaxed max-w-xl mx-auto">
-              개인 제안서 초안부터 팀 단위 문서 생산까지, 필요한 만큼 시작할 수 있습니다.
+              {pricing.description}
             </p>
           </motion.div>
 
@@ -446,24 +460,20 @@ export default function App() {
               transition={{ duration: 0.8, delay: 0 }}
               viewport={{ once: true, amount: 0.3 }}
             >
-              <p className="text-white/40 text-[12px] tracking-[0.15em] uppercase mb-3">Starter</p>
+              <p className="text-white/40 text-[12px] tracking-[0.15em] uppercase mb-3">{pricing.starter.label}</p>
               <div className="flex items-baseline gap-1 mb-2">
                 <span className="text-white text-[42px] font-light tracking-tight">$19</span>
-                <span className="text-white/30 text-[14px]">/one-time</span>
+                <span className="text-white/30 text-[14px]">{pricing.oneTime}</span>
               </div>
               <p className="text-white/40 text-[13px] leading-relaxed mb-8">
-                처음 제안서 초안을 빠르게 만들어보는 개인용 패키지.
+                {pricing.starter.description}
               </p>
               <ul className="flex flex-col gap-3 mb-10 flex-1">
-                <li className="flex items-center gap-3 text-white/60 text-[13px]">
-                  <span className="text-white/30">✓</span> AI 제안서 초안 생성
-                </li>
-                <li className="flex items-center gap-3 text-white/60 text-[13px]">
-                  <span className="text-white/30">✓</span> docx 파일 다운로드
-                </li>
-                <li className="flex items-center gap-3 text-white/60 text-[13px]">
-                  <span className="text-white/30">✓</span> 기본 제안서 템플릿
-                </li>
+                {pricing.starter.features.map((feature) => (
+                  <li key={feature} className="flex items-center gap-3 text-white/60 text-[13px]">
+                    <span className="text-white/30">✓</span> {feature}
+                  </li>
+                ))}
               </ul>
               <div className="flex flex-col gap-3">
                 <PayPalCheckoutButton
@@ -484,30 +494,23 @@ export default function App() {
             >
               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
                 <span className="bg-white text-black text-[11px] font-bold tracking-[0.1em] uppercase px-4 py-1.5 rounded-full">
-                  Recommended
+                  {pricing.recommended}
                 </span>
               </div>
-              <p className="text-white/40 text-[12px] tracking-[0.15em] uppercase mb-3">Pro</p>
+              <p className="text-white/40 text-[12px] tracking-[0.15em] uppercase mb-3">{pricing.pro.label}</p>
               <div className="flex items-baseline gap-1 mb-2">
                 <span className="text-white text-[42px] font-light tracking-tight">$49</span>
-                <span className="text-white/30 text-[14px]">/one-time</span>
+                <span className="text-white/30 text-[14px]">{pricing.oneTime}</span>
               </div>
               <p className="text-white/40 text-[13px] leading-relaxed mb-8">
-                공공지원사업, 영업제안서, 사업계획서까지 넓게 쓰는 전문가용.
+                {pricing.pro.description}
               </p>
               <ul className="flex flex-col gap-3 mb-10 flex-1">
-                <li className="flex items-center gap-3 text-white/60 text-[13px]">
-                  <span className="text-white/30">✓</span> Starter 전체 기능
-                </li>
-                <li className="flex items-center gap-3 text-white/60 text-[13px]">
-                  <span className="text-white/30">✓</span> 공공문서 톤 보정
-                </li>
-                <li className="flex items-center gap-3 text-white/60 text-[13px]">
-                  <span className="text-white/30">✓</span> 예산·일정 표 자동 구성
-                </li>
-                <li className="flex items-center gap-3 text-white/60 text-[13px]">
-                  <span className="text-white/30">✓</span> 프로젝트 저장 기능
-                </li>
+                {pricing.pro.features.map((feature) => (
+                  <li key={feature} className="flex items-center gap-3 text-white/60 text-[13px]">
+                    <span className="text-white/30">✓</span> {feature}
+                  </li>
+                ))}
               </ul>
               <div className="flex flex-col gap-3">
                 <PayPalCheckoutButton
@@ -526,33 +529,26 @@ export default function App() {
               transition={{ duration: 0.8, delay: 0.2 }}
               viewport={{ once: true, amount: 0.3 }}
             >
-              <p className="text-white/40 text-[12px] tracking-[0.15em] uppercase mb-3">Agency</p>
+              <p className="text-white/40 text-[12px] tracking-[0.15em] uppercase mb-3">{pricing.agency.label}</p>
               <div className="flex items-baseline gap-1 mb-2">
-                <span className="text-white text-[42px] font-light tracking-tight">Custom</span>
+                <span className="text-white text-[42px] font-light tracking-tight">{pricing.agency.price}</span>
               </div>
               <p className="text-white/40 text-[13px] leading-relaxed mb-8">
-                제안서 대행사, 컨설팅팀, 교육기관을 위한 맞춤형 문서 생산 환경.
+                {pricing.agency.description}
               </p>
               <ul className="flex flex-col gap-3 mb-10 flex-1">
-                <li className="flex items-center gap-3 text-white/60 text-[13px]">
-                  <span className="text-white/30">✓</span> Pro 전체 기능
-                </li>
-                <li className="flex items-center gap-3 text-white/60 text-[13px]">
-                  <span className="text-white/30">✓</span> 팀 템플릿 커스터마이징
-                </li>
-                <li className="flex items-center gap-3 text-white/60 text-[13px]">
-                  <span className="text-white/30">✓</span> 브랜드 문서 양식 적용
-                </li>
-                <li className="flex items-center gap-3 text-white/60 text-[13px]">
-                  <span className="text-white/30">✓</span> 전담 온보딩 지원
-                </li>
+                {pricing.agency.features.map((feature) => (
+                  <li key={feature} className="flex items-center gap-3 text-white/60 text-[13px]">
+                    <span className="text-white/30">✓</span> {feature}
+                  </li>
+                ))}
               </ul>
               <div className="flex flex-col gap-3">
                 <a
                   href="mailto:contact@aicitybuilders.com"
                   className="w-full max-w-md mx-auto h-[50px] rounded-lg font-medium text-[15px] flex items-center justify-center gap-2 border border-white/20 text-white/70 hover:bg-white/5 transition-colors"
                 >
-                  문의하기
+                  {pricing.agency.cta}
                 </a>
               </div>
             </motion.div>
@@ -585,7 +581,7 @@ export default function App() {
               <div className="flex items-center gap-2.5 mb-8">
                 <ProposalMasterLogo size={18} className="text-white/70" />
                 <span className="text-[15px] font-medium text-white/70 tracking-tight">
-                  {SITE_CONFIG.brandName}
+                  {siteConfig.brandName}
                 </span>
               </div>
               <p className="text-white/40 text-[14px] sm:text-[15px] leading-relaxed max-w-sm">
@@ -594,7 +590,7 @@ export default function App() {
             </div>
 
             <p className="text-white/25 text-[12px] mt-12">
-              {SITE_CONFIG.copyright}
+              {siteConfig.copyright}
             </p>
           </div>
         </div>

@@ -37,7 +37,7 @@ const PayPalCheckoutButton: React.FC<PayPalCheckoutButtonProps> = ({
           color: 'gold',
           shape: 'rect',
           label: 'paypal',
-          height: 50,
+          height: 42,
           tagline: false,
         }}
         createOrder={(_data, actions) => {
